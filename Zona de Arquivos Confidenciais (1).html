@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLASSIFIED // SYSTEM ACCESS</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fontes Google: Share Tech Mono & VT323 para clima investigativo/hacker -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        mono: ['"Share Tech Mono"', 'monospace'],
+                        terminal: ['"VT323"', 'monospace']
+                    },
+                    colors: {
+                        cyber: {
+                            black: '#030305',
+                            dark: '#0a0a0f',
+                            red: '#ff003c',
+                            green: '#00ff66',
+                            cyan: '#00f0ff',
+                            purple: '#7000ff'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Estilos e Efeitos Personalizados */
+        body {
+            background-color: #030305;
+            color: #d1d5db;
+            font-family: 'Share Tech Mono', monospace;
+            overflow-x: hidden;
+        }
+
+        /* Efeito CRT / Scanlines */
+        .scanlines {
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%, 
+                rgba(0, 0, 0, 0.35) 50%
+            ), linear-gradient(
+                90deg,
+                rgba(255, 0, 0, 0.03),
+                rgba(0, 255, 0, 0.01),
+                rgba(0, 0, 255, 0.03)
+            );
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+        }
+
+        /* Glitch no Título */
+        .glitch {
+            position: relative;
+            display: inline-block;
+        }
+        .glitch::before, .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            clip: rect(0, 0, 0, 0);
+        }
+        .glitch::before {
+            left: -2px;
+            text-shadow: 2px 0 #ff003c;
+            animation: glitch-anim-1 2s infinite linear alternate-reverse;
+        }
+        .glitch::after {
+            left: 2px;
+            text-shadow: -2px 0 #00f0ff;
+            animation: glitch-anim-2 3s infinite linear alternate-reverse;
+        }
+        @keyframes glitch-anim-1 {
+            0% { clip: rect(20px, 9999px, 15px, 0); }
+            20% { clip: rect(50px, 9999px, 80px, 0); }
+            40% { clip: rect(10px, 9999px, 40px, 0); }
+            60% { clip: rect(70px, 9999px, 20px, 0); }
+            80% { clip: rect(30px, 9999px, 90px, 0); }
+            100% { clip: rect(60px, 9999px, 10px, 0); }
+        }
+        @keyframes glitch-anim-2 {
+            0% { clip: rect(10px, 9999px, 60px, 0); }
+            25% { clip: rect(80px, 9999px, 10px, 0); }
+            50% { clip: rect(30px, 9999px, 70px, 0); }
+            75% { clip: rect(60px, 9999px, 30px, 0); }
+            100% { clip: rect(40px, 9999px, 80px, 0); }
+        }
+
+        /* Design 2D das Pastas */
+        .folder-card {
+            position: relative;
+            background: linear-gradient(145deg, #0e0e17, #06060a);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-top-left-radius: 0;
+        }
+        .folder-tab {
+            position: absolute;
+            top: -24px;
+            left: -1px;
+            height: 24px;
+            width: 130px;
+            background: #0e0e17;
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-bottom: none;
+            border-top-left-radius: 6px;
+            border-top-right-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        .folder-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255, 0, 60, 0.8);
+            box-shadow: 0 10px 25px -5px rgba(255, 0, 60, 0.2), 0 0 15px rgba(255, 0, 60, 0.1);
+        }
+        .folder-card:hover .folder-tab {
+            border-color: rgba(255, 0, 60, 0.8);
+            background: #141422;
+        }
+
+        /* Estilo especial para pastas de perigo */
+        .folder-card.danger {
+            border-color: rgba(255, 0, 60, 0.3);
+        }
+        .folder-card.danger .folder-tab {
+            border-color: rgba(255, 0, 60, 0.3);
+        }
+
+        /* Modal Overlay */
+        .modal-backdrop {
+            background-color: rgba(3, 3, 5, 0.92);
+            backdrop-filter: blur(8px);
+        }
+    </style>
+</head>
+<body class="min-h-screen relative flex flex-col justify-between select-none">
+
+    <!-- FX: Scanlines CRT -->
+    <div class="scanlines fixed inset-0 z-50"></div>
+
+    <!-- FX: Luzes Oscilantes no Fundo -->
+    <div class="fixed inset-0 pointer-events-none opacity-20 z-0">
+        <div class="absolute top-1/4 left-1/6 w-96 h-96 bg-cyber-red/20 rounded-full blur-3xl animate-pulse"></div>
+        <div class="absolute bottom-1/4 right-1/6 w-96 h-96 bg-cyber-purple/20 rounded-full blur-3xl animate-pulse" style="animation-duration: 4s;"></div>
+    </div>
+
+    <!-- Cabeçalho Global do Sistema -->
+    <header class="relative z-10 w-full p-4 border-b border-gray-900 flex justify-between items-center text-xs text-gray-500 font-mono">
+        <div class="flex items-center space-x-2">
+            <span class="w-2 h-2 rounded-full bg-cyber-red animate-ping"></span>
+            <span class="tracking-widest">SYS_LOC: UNKNOWN // PORT: 8080</span>
+        </div>
+        <div class="flex items-center space-x-4">
+            <button id="audioToggle" onclick="toggleAudio()" class="hover:text-cyber-cyan transition-colors flex items-center space-x-1">
+                <span id="audioIcon">🔇</span>
+                <span id="audioText">ÁUDIO: OFF</span>
+            </button>
+            <span id="clock" class="text-gray-400">00:00:00</span>
+        </div>
+    </header>
+
+    <!-- TELA INITIAL: BOTÃO CENTRALIZADO -->
+    <main id="introSection" class="relative z-10 flex-grow flex flex-col items-center justify-center p-6 text-center transition-all duration-700">
+        <div class="max-w-md w-full space-y-8">
+            <div>
+                <div class="inline-block border border-cyber-red/40 px-3 py-1 rounded text-cyber-red text-xs tracking-widest uppercase mb-4 bg-cyber-red/5">
+                    Acesso Restrito - Nível 5
+                </div>
+                <h1 class="text-4xl md:text-5xl font-extrabold text-white tracking-wider glitch uppercase mb-2" data-text="ARQUIVO MORTO">
+                    ARQUIVO MORTO
+                </h1>
+                <p class="text-gray-500 text-sm">
+                    As informações a seguir são altamente confidenciais. Prossiga por sua própria conta e risco.
+                </p>
+            </div>
+
+            <!-- Botão Principal Chamativo -->
+            <div class="pt-6">
+                <button onclick="enterSystem()" class="group relative inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white uppercase tracking-widest bg-black border-2 border-cyber-cyan rounded-lg overflow-hidden shadow-[0_0_20px_rgba(0,240,255,0.3)] hover:shadow-[0_0_35px_rgba(255,0,60,0.6)] hover:border-cyber-red transition-all duration-300">
+                    <span class="absolute inset-0 w-full h-full bg-gradient-to-r from-cyber-red to-cyber-purple opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                    
+                    <span class="relative z-10 flex items-center space-x-3 group-hover:text-white">
+                        <svg class="w-5 h-5 text-cyber-cyan group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path>
+                        </svg>
+                        <span>ACESSAR ZONA DE ARQUIVOS</span>
+                    </span>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- TELA DA ZONA DE ARQUIVOS (Oculta Inicialmente) -->
+    <main id="filesSection" class="hidden relative z-10 flex-grow max-w-6xl w-full mx-auto px-6 py-12 flex flex-col justify-center">
+        <!-- Banner Superior da Área -->
+        <div class="mb-12 border-b border-gray-800 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-2">
+            <div>
+                <span class="text-xs text-cyber-cyan tracking-widest uppercase">// BASE DE DADOS SECRETA</span>
+                <h2 class="text-3xl font-bold text-white tracking-wide">ZONA DE ARQUIVOS</h2>
+            </div>
+            <div class="text-xs text-gray-500">
+                STATUS: <span class="text-cyber-green">CONEXÃO CRIPTOGRAFADA</span>
+            </div>
+        </div>
+
+        <!-- Grade Responsiva 2D (2x2 em desktop / 1 coluna em celular) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-12">
+            
+            <!-- PASTA 1: DADOS INICIAIS -->
+            <div onclick="openFolder(1)" class="folder-card rounded-b-lg p-6 cursor-pointer group">
+                <div class="folder-tab flex items-center px-3">
+                    <span class="text-[10px] text-cyber-cyan tracking-wider font-bold group-hover:text-cyber-red transition-colors">DIR_01 // SEC</span>
+                </div>
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-xl font-bold text-white group-hover:text-cyber-cyan transition-colors flex items-center gap-2">
+                        <span>📄</span> 01. Dados Iniciais
+                    </h3>
+                    <span class="text-xs px-2 py-0.5 rounded bg-cyber-red/20 text-cyber-red border border-cyber-red/30">CLASS_S+</span>
+                </div>
+                <p class="text-xs text-gray-400 line-clamp-2">
+                    Relatório biológico e perfil sintético inicial da entidade capturada.
+                </p>
+                <div class="mt-6 flex justify-between items-center text-[11px] text-gray-500 pt-3 border-t border-gray-800/60">
+                    <span>REGISTRO #8841</span>
+                    <span class="group-hover:translate-x-1 transition-transform text-cyber-cyan">ABRIR &rarr;</span>
+                </div>
+            </div>
+
+            <!-- PASTA 2: ESTRANHO. -->
+            <div onclick="openFolder(2)" class="folder-card rounded-b-lg p-6 cursor-pointer group">
+                <div class="folder-tab flex items-center px-3">
+                    <span class="text-[10px] text-cyber-cyan tracking-wider font-bold group-hover:text-cyber-red transition-colors">DIR_02 // LOG</span>
+                </div>
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-xl font-bold text-white group-hover:text-cyber-cyan transition-colors flex items-center gap-2">
+                        <span>🧠</span> 02. Estranho.
+                    </h3>
+                    <span class="text-xs px-2 py-0.5 rounded bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">ANOMALIA</span>
+                </div>
+                <p class="text-xs text-gray-400 line-clamp-2">
+                    Registros de comportamento aberrante e interações inexplicáveis na cela de contenção.
+                </p>
+                <div class="mt-6 flex justify-between items-center text-[11px] text-gray-500 pt-3 border-t border-gray-800/60">
+                    <span>REGISTRO #8842</span>
+                    <span class="group-hover:translate-x-1 transition-transform text-cyber-cyan">ABRIR &rarr;</span>
+                </div>
+            </div>
+
+            <!-- PASTA 3: INVASÃO! -->
+            <div onclick="openFolder(3)" class="folder-card danger rounded-b-lg p-6 cursor-pointer group">
+                <div class="folder-tab flex items-center px-3">
+                    <span class="text-[10px] text-cyber-red tracking-wider font-bold">DIR_03 // WARN</span>
+                </div>
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-xl font-bold text-cyber-red group-hover:text-white transition-colors flex items-center gap-2">
+                        <span>⚠️</span> 03. Invasão!
+                    </h3>
+                    <span class="text-xs px-2 py-0.5 rounded bg-cyber-red text-black font-bold animate-pulse">BREACH</span>
+                </div>
+                <p class="text-xs text-gray-400 line-clamp-2">
+                    ALERTAS CRÍTICOS: Falha na segurança do setor. Registro imediato da brecha.
+                </p>
+                <div class="mt-6 flex justify-between items-center text-[11px] text-gray-500 pt-3 border-t border-gray-800/60">
+                    <span>REGISTRO #8899</span>
+                    <span class="group-hover:translate-x-1 transition-transform text-cyber-red">ABRIR &rarr;</span>
+                </div>
+            </div>
+
+            <!-- PASTA 4: OLÁ, DETETIVE. -->
+            <div onclick="openFolder(4)" class="folder-card danger rounded-b-lg p-6 cursor-pointer group">
+                <div class="folder-tab flex items-center px-3">
+                    <span class="text-[10px] text-cyber-purple tracking-wider font-bold">DIR_04 // UNK</span>
+                </div>
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-xl font-bold text-purple-400 group-hover:text-cyber-cyan transition-colors flex items-center gap-2">
+                        <span>🤡</span> 04. olá, Detetive.
+                    </h3>
+                    <span class="text-xs px-2 py-0.5 rounded bg-purple-900/40 text-purple-300 border border-purple-500/30">FINAL</span>
+                </div>
+                <p class="text-xs text-gray-400 line-clamp-2">
+                    Mensagem criptografada direta ao operador da investigação.
+                </p>
+                <div class="mt-6 flex justify-between items-center text-[11px] text-gray-500 pt-3 border-t border-gray-800/60">
+                    <span>REGISTRO #0000</span>
+                    <span class="group-hover:translate-x-1 transition-transform text-purple-400">ABRIR &rarr;</span>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- MODAL PARA EXIBIR CONTEÚDO DAS PASTAS -->
+    <div id="fileModal" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
+        <div class="relative w-full max-w-xl bg-cyber-dark border-2 border-cyber-cyan/50 rounded-xl p-6 sm:p-8 shadow-[0_0_50px_rgba(0,0,0,0.9)] overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyber-cyan via-cyber-red to-cyber-purple"></div>
+
+            <!-- Botão Fechar -->
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-500 hover:text-cyber-red transition-colors p-2 text-xl font-bold">
+                ✕
+            </button>
+
+            <!-- Cabeçalho Modal -->
+            <div id="modalHeader" class="mb-6 border-b border-gray-800 pb-3">
+                <span id="modalCategory" class="text-xs font-mono tracking-widest text-cyber-cyan">CLASSIFIED FILE</span>
+                <h3 id="modalTitle" class="text-2xl font-bold text-white mt-1">Título da Pasta</h3>
+            </div>
+
+            <!-- Corpo da Mensagem -->
+            <div id="modalBody" class="font-terminal text-xl leading-relaxed text-gray-300 space-y-3 bg-black/60 p-5 rounded-lg border border-gray-900">
+                <!-- Inserido dinamicamente via JavaScript -->
+            </div>
+
+            <!-- Rodapé Modal -->
+            <div class="mt-6 flex justify-between items-center text-xs text-gray-500 pt-2 border-t border-gray-900">
+                <span>SEGURANÇA: ENCRYPTED_AES_256</span>
+                <button onclick="closeModal()" class="px-4 py-2 bg-gray-900 hover:bg-gray-800 text-gray-300 rounded transition-colors uppercase font-mono text-xs">
+                    [ Fechar Arquivo ]
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TELA DE BLOQUEIO / EVENTO FINAL: SORRISO VERMELHO SANGRENTO -->
+    <div id="jumpscareScreen" class="fixed inset-0 bg-black z-[100] hidden flex flex-col items-center justify-center p-4 select-none overflow-hidden">
+        <div class="absolute inset-0 bg-red-950/10 pointer-events-none animate-pulse"></div>
+
+        <!-- SVG Sorriso Vermelho Sangrento Assustador -->
+        <div class="relative w-72 h-72 sm:w-96 sm:h-96 flex items-center justify-center">
+            <svg class="w-full h-full text-cyber-red filter drop-shadow-[0_0_25px_rgba(255,0,60,0.9)] animate-pulse" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Olhos Cruéis em X -->
+                <path d="M 45 60 L 65 80 M 65 60 L 45 80" stroke="#ff003c" stroke-width="8" stroke-linecap="round"/>
+                <path d="M 135 60 L 155 80 M 155 60 L 135 80" stroke="#ff003c" stroke-width="8" stroke-linecap="round"/>
+                
+                <!-- Sorriso Medonho Gargalhando -->
+                <path d="M 25 105 Q 100 185 175 105 Q 100 200 25 105 Z" fill="#ff003c" stroke="#ff003c" stroke-width="4"/>
+                
+                <!-- Dentes Afiados -->
+                <path d="M 40 112 L 50 135 L 60 117 L 70 142 L 80 120 L 90 145 L 100 121 L 110 145 L 120 120 L 130 142 L 140 117 L 150 135 L 160 112" stroke="#000" stroke-width="4" fill="none"/>
+                
+                <!-- Marcas / Gotas de Sangue Escorrendo -->
+                <path d="M 20 100 L 35 115 M 180 100 L 165 115 M 100 170 L 100 185 M 70 160 L 68 175 M 130 160 L 132 175" stroke="#ff003c" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+        </div>
+
+        <div class="mt-8 text-center space-y-2 relative z-10">
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-cyber-red font-mono tracking-widest uppercase glitch" data-text="SISTEMA CORROMPIDO">
+                SISTEMA CORROMPIDO
+            </h2>
+            <p class="text-xs sm:text-sm text-red-700 font-mono tracking-widest uppercase">
+                X) VOCÊ NÃO DEVERIA TER CONTINUADO... HA HA HA!
+            </p>
+        </div>
+
+        <!-- Botão Oculto de Reset para Testes -->
+        <button onclick="resetSystemState()" title="Resetar Sistema" class="absolute bottom-3 right-3 text-[10px] text-zinc-800 hover:text-red-600 font-mono transition-colors opacity-30 hover:opacity-100">
+            [RESET_SYSTEM]
+        </button>
+    </div>
+
+    <!-- Rodapé Minimalista -->
+    <footer class="relative z-10 w-full p-4 border-t border-gray-900 text-center text-xs text-gray-600 font-mono">
+        <p>SISTEMA DE ARQUIVOS CONFIDENCIAIS &copy; 2026 // TODOS OS DIREITOS RESERVADOS.</p>
+    </footer>
+
+    <!-- LOGICA JAVASCRIPT & AUDIO SINTETIZADO -->
+    <script>
+        let currentOpenFolder = null;
+
+        // Verificar ao carregar a página se o sistema já foi corrompido anteriormente
+        window.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('glitchborn_corrupted') === 'true') {
+                triggerGlitchLockout(true);
+            }
+        });
+
+        // Relógio do Sistema
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toTimeString().split(' ')[0];
+            const clockEl = document.getElementById('clock');
+            if (clockEl) clockEl.textContent = timeStr;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // ----------------------------------------------------
+        // WEB AUDIO API - Efeitos Sonoros Sintéticos
+        // ----------------------------------------------------
+        let audioCtx = null;
+        let isAudioEnabled = false;
+        let ambientOscillator = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function toggleAudio() {
+            initAudio();
+            isAudioEnabled = !isAudioEnabled;
+
+            const icon = document.getElementById('audioIcon');
+            const text = document.getElementById('audioText');
+
+            if (isAudioEnabled) {
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                if (icon) icon.textContent = '🔊';
+                if (text) text.textContent = 'ÁUDIO: ON';
+                playClickSound(800, 0.05);
+                startAmbientHum();
+            } else {
+                if (icon) icon.textContent = '🔇';
+                if (text) text.textContent = 'ÁUDIO: OFF';
+                stopAmbientHum();
+            }
+        }
+
+        function playClickSound(freq = 600, duration = 0.05) {
+            if (!isAudioEnabled || !audioCtx) return;
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + duration);
+
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function playOpenSound() {
+            if (!isAudioEnabled || !audioCtx) return;
+
+            const freqs = [400, 800, 1200, 600];
+            freqs.forEach((f, idx) => {
+                setTimeout(() => {
+                    if (!audioCtx) return;
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+
+                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.08);
+                }, idx * 40);
+            });
+        }
+
+        function playAlertSound() {
+            if (!isAudioEnabled || !audioCtx) return;
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+            osc.frequency.linearRampToValueAtTime(80, audioCtx.currentTime + 0.3);
+
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.3);
+        }
+
+        function playJumpscareSound() {
+            initAudio();
+            if (!audioCtx) return;
+
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            // Som de Distorção Grave
+            const bassOsc = audioCtx.createOscillator();
+            const bassGain = audioCtx.createGain();
+            bassOsc.type = 'sawtooth';
+            bassOsc.frequency.setValueAtTime(120, audioCtx.currentTime);
+            bassOsc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 2.0);
+
+            bassGain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            bassGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 2.0);
+
+            bassOsc.connect(bassGain);
+            bassGain.connect(audioCtx.destination);
+            bassOsc.start();
+            bassOsc.stop(audioCtx.currentTime + 2.0);
+
+            // Sequência de Notas da Gargalhada
+            const laughNotes = [600, 320, 580, 290, 620, 250, 680, 200, 720, 150];
+            laughNotes.forEach((freq, index) => {
+                setTimeout(() => {
+                    if (!audioCtx) return;
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(freq - 120, audioCtx.currentTime + 0.12);
+
+                    gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.12);
+                }, index * 90);
+            });
+        }
+
+        function startAmbientHum() {
+            if (!isAudioEnabled || !audioCtx || ambientOscillator) return;
+
+            ambientOscillator = audioCtx.createOscillator();
+            const ambientGain = audioCtx.createGain();
+
+            ambientOscillator.type = 'triangle';
+            ambientOscillator.frequency.setValueAtTime(55, audioCtx.currentTime);
+
+            ambientGain.gain.setValueAtTime(0.02, audioCtx.currentTime);
+
+            ambientOscillator.connect(ambientGain);
+            ambientGain.connect(audioCtx.destination);
+
+            ambientOscillator.start();
+        }
+
+        function stopAmbientHum() {
+            if (ambientOscillator) {
+                ambientOscillator.stop();
+                ambientOscillator = null;
+            }
+        }
+
+        // ----------------------------------------------------
+        // LÓGICA DA INTERFACE & ARQUIVOS
+        // ----------------------------------------------------
+
+        function enterSystem() {
+            playClickSound(1000, 0.1);
+            
+            const intro = document.getElementById('introSection');
+            const files = document.getElementById('filesSection');
+
+            intro.classList.add('opacity-0', 'scale-95');
+            
+            setTimeout(() => {
+                intro.classList.add('hidden');
+                files.classList.remove('hidden');
+                playOpenSound();
+            }, 500);
+        }
+
+        const folderData = {
+            1: {
+                category: "RELATÓRIO BIOLÓGICO // CLASS_S+",
+                title: "Pasta 1: Dados Iniciais.",
+                themeColor: "text-cyber-cyan",
+                content: `
+                    <p class="mb-2"><strong class="text-white">Nome da Criatura:</strong> Glitchborn</p>
+                    <p class="mb-3"><strong class="text-white">Nivel de Perigo:</strong> <span class="text-cyber-red font-bold">S+</span></p>
+                    <p class="pt-3 border-t border-gray-800 text-gray-400">• Solta Palavras sem nexo as Vezes.</p>
+                `
+            },
+            2: {
+                category: "REGISTRO DE COMPORTAMENTO",
+                title: "Pasta 2: Estranho.",
+                themeColor: "text-yellow-400",
+                content: `
+                    <p class="mb-3">• Glitchborn Começou a Se mover e Conversar De Forma Esquisita com a Parede</p>
+                    <p class="pt-3 border-t border-gray-800 text-yellow-200/80">• Age como se Tivesse Outra Pessoa no Quarto.</p>
+                `
+            },
+            3: {
+                category: "ALERTA DE INVASÃO",
+                title: "Pasta 3: Invasão!",
+                themeColor: "text-cyber-red",
+                content: `
+                    <p class="text-cyber-red font-bold animate-pulse mb-3">⚠️ Fomos atacados! Não sei quanto tempo vou Durar, Mas Tem... um palhaço???</p>
+                    <p class="pt-3 border-t border-gray-800 text-gray-400">• Sem muito papo, ele Ja Sabe onde eu estou...</p>
+                `
+            },
+            4: {
+                category: "MENSAGEM DESCONHECIDA",
+                title: "Pasta 4: olá, Detetive.",
+                themeColor: "text-purple-400",
+                content: `
+                    <p class="text-gray-200 mb-2">• Olá detetive, Vejo que está Procurando mais Do que Pode Alcançar...</p>
+                    <p class="text-gray-400 mb-6 italic">• Desiste antes que O Mundo Faça Você desistir.</p>
+                    <p class="text-right text-cyber-red font-bold text-2xl tracking-widest font-mono">Ass - X)</p>
+                `
+            }
+        };
+
+        function openFolder(id) {
+            currentOpenFolder = id;
+            const data = folderData[id];
+            if (!data) return;
+
+            if (id === 3 || id === 4) {
+                playAlertSound();
+            } else {
+                playOpenSound();
+            }
+
+            const modal = document.getElementById('fileModal');
+            const modalCategory = document.getElementById('modalCategory');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+
+            modalCategory.textContent = data.category;
+            modalCategory.className = `text-xs font-mono tracking-widest ${data.themeColor}`;
+            
+            modalTitle.textContent = data.title;
+            modalBody.innerHTML = data.content;
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            playClickSound(400, 0.04);
+            const modal = document.getElementById('fileModal');
+            modal.classList.add('hidden');
+
+            // GATILHO CRÍTICO: SOMENTE SE A PASTA 4 ("olá, Detetive") FOR FECHADA, DISPARA O EVENTO FINAL
+            if (currentOpenFolder === 4) {
+                triggerGlitchLockout();
+            }
+            
+            currentOpenFolder = null;
+        }
+
+        // BLOQUEIO PERMANENTE E EXIBIÇÃO DO SORRISO VERMELHO
+        function triggerGlitchLockout(immediate = false) {
+            localStorage.setItem('glitchborn_corrupted', 'true');
+
+            if (!immediate) {
+                playJumpscareSound();
+            }
+
+            // Oculta/Destrói os elementos interativos
+            const intro = document.getElementById('introSection');
+            const files = document.getElementById('filesSection');
+            const modal = document.getElementById('fileModal');
+            
+            if (intro) intro.remove();
+            if (files) files.remove();
+            if (modal) modal.remove();
+
+            // Exibe a tela com o Sorriso Vermelho Sangrento
+            const jumpscareScreen = document.getElementById('jumpscareScreen');
+            if (jumpscareScreen) {
+                jumpscareScreen.classList.remove('hidden');
+            }
+        }
+
+        // Função de Reset para Testes
+        function resetSystemState() {
+            localStorage.removeItem('glitchborn_corrupted');
+            window.location.reload();
+        }
+
+        // Fechar modal com a tecla ESC
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
